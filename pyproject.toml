@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decrypte-2027"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "pydantic>=2.14.1",
+    "pypdf>=6.20.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+[tool.setuptools.packages.find]
+where = ["src"]
