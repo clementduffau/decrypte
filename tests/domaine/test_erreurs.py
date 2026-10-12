@@ -2,16 +2,22 @@
 
 import pytest
 
-from decrypte.domaine.erreurs import DocumentIllisible, ErreurDecrypte, FormatNonGere
+from decrypte.domaine.erreurs import (
+    DocumentIllisible,
+    ErreurDecrypte,
+    FichierIntrouvable,
+    FormatNonGere,
+)
 
 
 def test_nos_erreurs_appartiennent_a_la_meme_famille():
+    assert issubclass(FichierIntrouvable, ErreurDecrypte)
     assert issubclass(FormatNonGere, ErreurDecrypte)
     assert issubclass(DocumentIllisible, ErreurDecrypte)
 
 
 def test_un_seul_except_attrape_toutes_nos_erreurs():
-    for erreur in (FormatNonGere("format"), DocumentIllisible("vide")):
+    for erreur in (FichierIntrouvable("absent"), FormatNonGere("format"), DocumentIllisible("vide")):
         with pytest.raises(ErreurDecrypte):
             raise erreur
 

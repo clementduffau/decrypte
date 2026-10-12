@@ -10,3 +10,7 @@ class FormatNonGere(ErreurDecrypte):
 
 class DocumentIllisible(ErreurDecrypte):
     """Le document a été ouvert, mais il ne contient presque pas de texte."""
+    
+    
+class FichierIntrouvable(ErreurDecrypte):
+    """Le fichier demandé n'existe pas (ou c'est un dossier)."""
