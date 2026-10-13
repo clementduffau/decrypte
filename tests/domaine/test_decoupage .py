@@ -2,16 +2,11 @@
 
 import pytest
 
+
 from decrypte.domaine.decoupage import couper_texte, decouper
-from decrypte.domaine.modeles import Document, Page, SourceDocument
-from tests.conftest import PAGES_PROGRAMME_FICTIF
+from tests.conftest import PAGES_PROGRAMME_FICTIF, creer_document
 
 
-def creer_document(*textes: str) -> Document:
-    """Fabrique un Document avec une page par texte donné."""
-    source = SourceDocument(chemin="essai.txt", sha256="0" * 64, nb_pages=len(textes), type="texte")
-    pages = [Page(numero=i, texte=texte) for i, texte in enumerate(textes, start=1)]
-    return Document(source=source, pages=pages)
 
 
 # ---------------------------------------------------------------------------

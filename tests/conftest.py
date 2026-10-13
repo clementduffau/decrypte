@@ -12,6 +12,8 @@ import pytest
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
+from decrypte.domaine.modeles import Document, Page, SourceDocument
+
 # Le programme fictif utilisé dans les tests (un élément de la liste = une page).
 PAGES_PROGRAMME_FICTIF = [
     "Programme de Camille Exemple, Mouvement Fictif pour les Tests. "
@@ -44,6 +46,13 @@ def aplatir(texte: str) -> str:
     pourrait être lu « maisons de\\nsanté » et un test échouerait pour rien.
     """
     return " ".join(texte.split())
+
+
+def creer_document(*textes: str) -> Document:
+    """Fabrique un Document en mémoire, avec une page par texte donné (sans passer par un fichier)."""
+    source = SourceDocument(chemin="essai.txt", sha256="0" * 64, nb_pages=len(textes), type="texte")
+    pages = [Page(numero=i, texte=texte) for i, texte in enumerate(textes, start=1)]
+    return Document(source=source, pages=pages)
 
 
 @pytest.fixture
