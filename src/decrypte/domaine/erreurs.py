@@ -14,3 +14,7 @@ class DocumentIllisible(ErreurDecrypte):
     
 class FichierIntrouvable(ErreurDecrypte):
     """Le fichier demandé n'existe pas (ou c'est un dossier)."""
+
+
+class ExtractionImpossible(ErreurDecrypte):
+    """Le modèle d'IA n'a pas pu extraire les propositions (panne réseau, quota, réponse illisible…)."""
