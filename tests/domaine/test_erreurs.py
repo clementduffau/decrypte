@@ -5,21 +5,30 @@ import pytest
 from decrypte.domaine.erreurs import (
     DocumentIllisible,
     ErreurDecrypte,
+    ExtractionImpossible,
     FichierIntrouvable,
     FormatNonGere,
+    ProgrammeIntrouvable,
+)
+
+TOUTES_NOS_ERREURS = (
+    FichierIntrouvable,
+    FormatNonGere,
+    DocumentIllisible,
+    ExtractionImpossible,
+    ProgrammeIntrouvable,
 )
 
 
 def test_nos_erreurs_appartiennent_a_la_meme_famille():
-    assert issubclass(FichierIntrouvable, ErreurDecrypte)
-    assert issubclass(FormatNonGere, ErreurDecrypte)
-    assert issubclass(DocumentIllisible, ErreurDecrypte)
+    for classe in TOUTES_NOS_ERREURS:
+        assert issubclass(classe, ErreurDecrypte)
 
 
 def test_un_seul_except_attrape_toutes_nos_erreurs():
-    for erreur in (FichierIntrouvable("absent"), FormatNonGere("format"), DocumentIllisible("vide")):
+    for classe in TOUTES_NOS_ERREURS:
         with pytest.raises(ErreurDecrypte):
-            raise erreur
+            raise classe("un message")
 
 
 def test_le_message_est_conserve():

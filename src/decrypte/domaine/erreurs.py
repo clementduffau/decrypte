@@ -18,3 +18,7 @@ class FichierIntrouvable(ErreurDecrypte):
 
 class ExtractionImpossible(ErreurDecrypte):
     """Le modèle d'IA n'a pas pu extraire les propositions (panne réseau, quota, réponse illisible…)."""
+    
+
+class ProgrammeIntrouvable(ErreurDecrypte):
+    """Aucun programme extrait n'a été enregistré pour ce candidat."""
