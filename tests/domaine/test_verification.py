@@ -184,3 +184,50 @@ def test_un_meme_verificateur_pour_plusieurs_citations(verificateur):
         StatutCitation.APPROCHANTE,
         StatutCitation.EXACTE,
     ]
+    
+    
+    
+    
+
+# ---------------------------------------------------------------------------
+# Mots coupés en fin de ligne (cas réel rencontré sur un vrai programme)
+# ---------------------------------------------------------------------------
+
+
+def test_mot_coupe_en_fin_de_ligne_est_recolle():
+    formes = [mot.forme for mot in decouper_en_mots("des hôpi -\ntaux et recen-\nser")]
+    assert formes == ["des", "hôpitaux", "et", "recenser"]
+
+
+def test_mot_recolle_garde_sa_position_d_origine():
+    texte = "des hôpi -\ntaux"
+    mot = decouper_en_mots(texte)[1]
+
+    assert texte[mot.debut : mot.fin] == "hôpi -\ntaux"  # l'extrait affiché reste celui du PDF
+
+
+def test_nom_compose_avec_majuscule_n_est_pas_recolle():
+    formes = [mot.forme for mot in decouper_en_mots("Île-de-\nFrance")]
+    assert formes == ["île", "de", "france"]
+
+
+def test_tiret_en_milieu_de_ligne_n_est_pas_recolle():
+    formes = [mot.forme for mot in decouper_en_mots("un arc-en-ciel")]
+    assert formes == ["un", "arc", "en", "ciel"]
+
+
+def test_cas_reel_citation_exacte_malgre_un_mot_coupe():
+    # Extrait d'un vrai programme, tel que pypdf le lit : « hôpi -\ntaux ».
+    page = (
+        "Travailler moins \npour travailler tous ! Que l’on demande aux personnels des hôpi -\n"
+        "taux, des Ehpad, de l’éducation, des transports \npublics d’établir une liste "
+        "d’embauches dont ils \nauraient besoin."
+    )
+    citation = (
+        "Travailler moins pour travailler tous ! Que l’on demande aux personnels des hôpitaux, "
+        "des Ehpad, de l’éducation, des transports publics d’établir une liste d’embauches dont ils auraient besoin."
+    )
+
+    verification = VerificateurCitations(creer_document(page)).verifier(citation)
+
+    assert verification.statut == StatutCitation.EXACTE  # c'était APPROCHANTE (0,969) avant la correction

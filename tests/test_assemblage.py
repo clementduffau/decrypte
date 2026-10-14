@@ -1,12 +1,21 @@
+"""Tests de l'assemblage : les vrais adaptateurs sont-ils bien branchés ?
 
+Ici, pas de faux : on vérifie que les cas d'usage fabriqués par l'assemblage
+utilisent les bons adaptateurs (lecteurs, Mistral, stockage JSON).
+Aucun appel à Mistral n'est fait : on vérifie le branchement, pas l'IA.
+"""
 
 import pytest
 
+from decrypte.adaptateurs.ia.mistral import MODELE_PAR_DEFAUT, ExtracteurMistral
+from decrypte.adaptateurs.stockage_json import StockageJson
 from decrypte.application.charger_programme import ChargerProgramme
-from decrypte.assemblage import creer_charger_programme
-from decrypte.domaine.erreurs import FichierIntrouvable, FormatNonGere
+from decrypte.application.extraire_programme import ExtraireProgramme
+from decrypte.assemblage import creer_charger_programme, creer_extraire_programme, creer_stockage
+from decrypte.domaine.erreurs import ExtractionImpossible, FichierIntrouvable, FormatNonGere
 from tests.conftest import PAGES_PROGRAMME_FICTIF, aplatir
 
+# Le programme fictif en un seul texte (plus de 200 caractères).
 TEXTE_COMPLET = " ".join(PAGES_PROGRAMME_FICTIF)
 
 
@@ -65,3 +74,31 @@ def test_refuse_un_format_inconnu_et_liste_les_formats(tmp_path):
 def test_branche_le_vrai_disque(tmp_path):
     with pytest.raises(FichierIntrouvable):
         creer_charger_programme().executer(tmp_path / "absent.pdf")
+
+
+# ---------------------------------------------------------------------------
+# Extraction et stockage
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_branchee_sur_mistral_avec_le_modele_choisi():
+    cas_usage = creer_extraire_programme({"MISTRAL_API_KEY": "cle-de-test", "MISTRAL_MODELE": "ministral-8b-2512"})
+
+    assert isinstance(cas_usage, ExtraireProgramme)
+    # Un test d'assemblage a le droit de regarder à l'intérieur : c'est le branchement qu'il vérifie.
+    assert isinstance(cas_usage._extracteur, ExtracteurMistral)
+    assert cas_usage._extracteur.nom_modele == "ministral-8b-2512"
+
+
+def test_modele_par_defaut_si_absent_du_env():
+    cas_usage = creer_extraire_programme({"MISTRAL_API_KEY": "cle-de-test"})
+    assert cas_usage._extracteur.nom_modele == MODELE_PAR_DEFAUT
+
+
+def test_cle_manquante_message_clair():
+    with pytest.raises(ExtractionImpossible, match="MISTRAL_API_KEY"):
+        creer_extraire_programme({})
+
+
+def test_stockage_en_json(tmp_path):
+    assert isinstance(creer_stockage(tmp_path), StockageJson)

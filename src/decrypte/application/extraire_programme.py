@@ -1,9 +1,8 @@
 
-
 from collections.abc import Callable
 from datetime import datetime, timezone
 
-from decrypte.domaine.decoupage import TAILLE_MAX, decouper
+from decrypte.domaine.decoupage import TAILLE_MAX, Morceau, decouper
 from decrypte.domaine.modeles import (
     Candidat,
     Document,
@@ -34,14 +33,24 @@ class ExtraireProgramme:
         self._horloge = horloge
         self._taille_morceau = taille_morceau
 
-    def executer(self, document: Document, candidat: Candidat) -> ProgrammeExtrait:
+    def executer(
+        self,
+        document: Document,
+        candidat: Candidat,
+        suivi: Callable[[Morceau, int], None] | None = None,
+    ) -> ProgrammeExtrait:
         verificateur = VerificateurCitations(document)  # le document est préparé une seule fois
         propositions: list[Proposition] = []
         rejetees: list[PropositionRejetee] = []
         passages_deja_vus: set[tuple] = set()  # les (page, extrait) déjà utilisés
 
-        for morceau in decouper(document, self._taille_morceau):
+        # 1. Découper, puis 2. envoyer chaque morceau à l'IA (le texte seul, sans le nom du candidat).
+        morceaux = decouper(document, self._taille_morceau)
+        for morceau in morceaux:
+            if suivi is not None:
+                suivi(morceau, len(morceaux))  # ex. pour afficher « Morceau 3/12 » pendant l'extraction
             for extraite in self._extracteur.extraire(morceau.texte):
+                # 3. Vérifier la citation dans tout le programme.
                 verification = verificateur.verifier(extraite.citation)
 
                 if verification.statut == StatutCitation.INTROUVABLE:
@@ -54,6 +63,7 @@ class ExtraireProgramme:
                     )
                     continue
 
+                # 4. Écarter les doublons : même page et même passage du programme.
                 passage = (verification.page, verification.extrait_source)
                 if passage in passages_deja_vus:
                     rejetees.append(
@@ -73,13 +83,14 @@ class ExtraireProgramme:
                 propositions.append(
                     Proposition(
                         **extraite.model_dump(),  # citation, resume_neutre, theme, chiffres
-                        id=f"{candidat.id}-{len(propositions) + 1:03d}", 
+                        id=f"{candidat.id}-{len(propositions) + 1:03d}",  # ex. "camille-exemple-001"
                         candidat_id=candidat.id,
                         verification=verification,
                         alertes=alertes,
                     )
                 )
 
+        # 5. Assembler le résultat.
         return ProgrammeExtrait(
             candidat=candidat,
             source=document.source,

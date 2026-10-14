@@ -9,6 +9,7 @@ from decrypte.domaine.modeles import Document, StatutCitation, Verification
 
 SEUIL_APPROCHANTE = 0.85
 
+COUPURE_EN_FIN_DE_LIGNE = re.compile(r"[ \t]*-[ \t]*\n\s*")
 
 class Mot(NamedTuple):
     forme : str
@@ -21,12 +22,23 @@ def simplifier(mot: str) -> str:
     return unicodedata.normalize("NFKC", mot).casefold()
 
 
-def decouper_en_mots(texte: str, page : int = 0) -> list[Mot]:
-    texte = unicodedata.normalize("NFC", texte)
-    return [
-        Mot(simplifier(trouve.group()), page, trouve.start(), trouve.end())
-        for trouve in re.finditer(r"\w+", texte)
-    ]
+def decouper_en_mots(texte: str, page: int = 0) -> list[Mot]:
+  
+    texte = unicodedata.normalize("NFC", texte)  # « é » toujours écrit avec un seul caractère
+    mots: list[Mot] = []
+    for trouve in re.finditer(r"\w+", texte):  # \w+ = une suite de lettres ou de chiffres
+        mot = Mot(simplifier(trouve.group()), page, trouve.start(), trouve.end())
+        if mots and est_coupe_en_fin_de_ligne(texte, mots[-1], mot):
+            debut_du_mot = mots.pop()  # on retire « hôpi »…
+            mot = Mot(debut_du_mot.forme + mot.forme, page, debut_du_mot.debut, mot.fin)  # …et on garde « hôpitaux »
+        mots.append(mot)
+    return mots
+
+
+def est_coupe_en_fin_de_ligne(texte: str, precedent: Mot, suivant: Mot) -> bool:
+    """Vrai si « precedent » et « suivant » sont les deux moitiés d'un même mot, coupé par un tiret en fin de ligne."""
+    entre_les_deux = texte[precedent.fin : suivant.debut]
+    return COUPURE_EN_FIN_DE_LIGNE.fullmatch(entre_les_deux) is not None and texte[suivant.debut].islower()
     
 
 class VerificateurCitations:
