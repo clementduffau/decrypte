@@ -22,3 +22,7 @@ class ExtractionImpossible(ErreurDecrypte):
 
 class ProgrammeIntrouvable(ErreurDecrypte):
     """Aucun programme extrait n'a été enregistré pour ce candidat."""
+    
+
+class ReponsesInvalides(ErreurDecrypte):
+    """Les réponses envoyées par l'utilisateur ne correspondent pas aux propositions connues."""
