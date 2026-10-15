@@ -13,3 +13,6 @@ class StockageProgrammes(Protocol):
         """ Charger un programme a partir de son identifiant"""
         ...
         
+    def lister_candidats(self) -> list[str]:
+        """Les identifiants des candidats dont un programme est enregistré, par ordre alphabétique."""
+        ...

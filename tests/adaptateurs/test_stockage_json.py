@@ -108,3 +108,24 @@ def test_programme_absent(tmp_path):
 def test_identifiant_dangereux_refuse(tmp_path):
     with pytest.raises(ProgrammeIntrouvable, match="invalide"):
         StockageJson(tmp_path).charger("../../secret")
+        
+
+def test_lister_les_candidats_par_ordre_alphabetique(tmp_path, programme):
+    stockage = StockageJson(tmp_path)
+    stockage.enregistrer(programme)
+    autre = programme.model_copy(update={"candidat": programme.candidat.model_copy(update={"id": "alex-autre"})})
+    stockage.enregistrer(autre)
+
+    assert stockage.lister_candidats() == ["alex-autre", "camille-exemple"]
+
+
+def test_lister_quand_le_dossier_n_existe_pas(tmp_path):
+    assert StockageJson(tmp_path / "pas-encore-cree").lister_candidats() == []
+
+
+def test_lister_ignore_les_autres_fichiers(tmp_path, programme):
+    StockageJson(tmp_path).enregistrer(programme)
+    (tmp_path / "notes.txt").write_text("rien à voir", encoding="utf-8")
+    (tmp_path / "Brouillon Copie.json").write_text("{}", encoding="utf-8")  # nom invalide
+
+    assert StockageJson(tmp_path).lister_candidats() == ["camille-exemple"]

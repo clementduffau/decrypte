@@ -27,6 +27,11 @@ class StockageJson:
             raise ProgrammeIntrouvable(f"Aucun programme extrait pour « {candidat_id} » ({chemin} n'existe pas).")
         return ProgrammeExtrait.model_validate_json(chemin.read_text(encoding="utf-8"))
     
+    def lister_candidats(self) -> list[str]:
+        if not self._dossier.is_dir():
+            return []
+        return sorted(f.stem for f in self._dossier.glob("*.json") if IDENTIFIANT_VALIDE.fullmatch(f.stem))
+    
     def _chemin(self, candidat_id = str) -> Path:
         if not IDENTIFIANT_VALIDE.fullmatch(candidat_id):
             raise ProgrammeIntrouvable(f"Identifiant de candidat invalide : {candidat_id!r}")
