@@ -10,13 +10,16 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "beautifulsoup4>=4.15.0",
+    "fastapi>=0.143.2",
     "httpx>=0.28.1",
     "pydantic>=2.14.1",
     "pypdf>=6.20.0",
     "python-dotenv>=1.2.4",
+    "uvicorn>=0.54.0",
 ]
 [project.scripts]
 decrypte = "decrypte.points_entree.cli:main"
+decrypte-api = "decrypte.points_entree.api:main"
 
 [dependency-groups]
 dev = [

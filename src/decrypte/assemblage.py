@@ -12,6 +12,7 @@ from decrypte.adaptateurs.lecteurs.texte import LecteurTexte
 from decrypte.adaptateurs.stockage_json import StockageJson
 from decrypte.application.charger_programme import ChargerProgramme
 from decrypte.application.extraire_programme import ExtraireProgramme
+from decrypte.application.questionnaire import CalculerResultats, ConstruireQuestionnaire
 
 DOSSIER_EXTRAITS = Path("data/extraits")
 
@@ -39,3 +40,13 @@ def creer_extraire_programme(environ: Mapping[str, str] = os.environ) -> Extrair
 def creer_stockage(dossier: str | Path = DOSSIER_EXTRAITS) -> StockageJson:
     """Renvoie le stockage des programmes extraits, en fichiers JSON."""
     return StockageJson(dossier)
+
+
+def creer_construire_questionnaire(
+    dossier : str | Path = DOSSIER_EXTRAITS, par_candidat : int | None = None
+) -> ConstruireQuestionnaire:
+    return ConstruireQuestionnaire(creer_stockage(dossier), par_candidat = par_candidat)
+
+
+def creer_calculer_resultats(dossier : str | Path = DOSSIER_EXTRAITS)-> CalculerResultats:
+    return CalculerResultats(creer_stockage(dossier))

@@ -11,7 +11,14 @@ from decrypte.adaptateurs.ia.mistral import MODELE_PAR_DEFAUT, ExtracteurMistral
 from decrypte.adaptateurs.stockage_json import StockageJson
 from decrypte.application.charger_programme import ChargerProgramme
 from decrypte.application.extraire_programme import ExtraireProgramme
-from decrypte.assemblage import creer_charger_programme, creer_extraire_programme, creer_stockage
+from decrypte.application.questionnaire import CalculerResultats, ConstruireQuestionnaire
+from decrypte.assemblage import (
+    creer_calculer_resultats,
+    creer_charger_programme,
+    creer_construire_questionnaire,
+    creer_extraire_programme,
+    creer_stockage,
+)
 from decrypte.domaine.erreurs import ExtractionImpossible, FichierIntrouvable, FormatNonGere
 from tests.conftest import PAGES_PROGRAMME_FICTIF, aplatir
 
@@ -102,3 +109,17 @@ def test_cle_manquante_message_clair():
 
 def test_stockage_en_json(tmp_path):
     assert isinstance(creer_stockage(tmp_path), StockageJson)
+    
+    
+def test_questionnaire_branche_sur_le_stockage_json(tmp_path):
+    cas_usage = creer_construire_questionnaire(tmp_path, par_candidat=3)
+
+    assert isinstance(cas_usage, ConstruireQuestionnaire)
+    assert cas_usage.executer() == []  # dossier vide : aucune carte, et pas d'erreur
+
+
+def test_resultats_branches_sur_le_stockage_json(tmp_path):
+    cas_usage = creer_calculer_resultats(tmp_path)
+
+    assert isinstance(cas_usage, CalculerResultats)
+    assert cas_usage.executer({}) == []
